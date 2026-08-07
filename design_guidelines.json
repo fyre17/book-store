@@ -1,0 +1,146 @@
+{
+  "theme": "The Alchemist's Library (Premium Light/Warm)",
+  "concept": "A fusion of Swiss editorial typography, organic warmth, and tactile interfaces. It blends the intellectual depth of a classic bookstore with the frictionless precision of a modern SaaS.",
+  "typography": {
+    "strategy": "Editorial Serif for emotion, Geometric Sans for utility.",
+    "fonts": {
+      "headings": "Playfair Display, serif",
+      "body": "Manrope, sans-serif",
+      "admin_data": "JetBrains Mono, monospace (for numbers/stats)"
+    },
+    "hierarchy": {
+      "h1": "text-5xl md:text-6xl tracking-tight leading-none font-bold text-charcoal",
+      "h2": "text-3xl md:text-4xl tracking-tight leading-tight font-semibold text-charcoal",
+      "h3": "text-xl md:text-2xl font-medium text-charcoal",
+      "body": "text-base leading-relaxed text-stone-600",
+      "labels": "text-xs uppercase tracking-[0.2em] font-bold text-stone-500",
+      "admin_metric": "text-4xl font-light tracking-tighter text-charcoal"
+    }
+  },
+  "colors": {
+    "light": {
+      "background": "#FDFBF7",
+      "surface": "#F6F4EE",
+      "surface_glass": "rgba(253, 251, 247, 0.7)",
+      "primary": "#D95D39",
+      "primary_hover": "#C24B28",
+      "secondary": "#8A9A86",
+      "text_main": "#1A1A1A",
+      "text_muted": "#5C5C5C",
+      "border": "#E8E4D9"
+    },
+    "dark": {
+      "background": "#1C1917",
+      "surface": "#292524",
+      "surface_glass": "rgba(28, 25, 23, 0.7)",
+      "primary": "#E27D60",
+      "primary_hover": "#F08D72",
+      "secondary": "#9CB096",
+      "text_main": "#FDFBF7",
+      "text_muted": "#A8A29E",
+      "border": "#44403C"
+    }
+  },
+  "layouts": {
+    "spacing_system": "Generous Spacing Philosophy. Use 2-3x more spacing than default. p-8 to p-24 for main sections.",
+    "frontend_grid": "The 'Bento' Grid Protocol. Asymmetrical grids for features. gap-8 to gap-12. Never perfectly fill the grid; allow negative space.",
+    "admin_grid": "Dense but warm. 3-4 column data layouts. North-star metric top-left. Collapsible left sidebar.",
+    "navigation": "Sticky glassmorphism header. backdrop-blur-xl + background color at 70% opacity. 1px bottom border. NEVER fully transparent."
+  },
+  "visual_enhancers": {
+    "shadows": "Ambient + Direct layered shadows. shadow-[0_8px_30px_rgb(0,0,0,0.04)] for standard cards. shadow-[0_20px_40px_rgb(217,93,57,0.15)] for primary CTA.",
+    "borders": "1px crisp borders (border-border) on all cards to ground them, paired with soft shadows.",
+    "radii": "Rounded cards (rounded-2xl for surfaces, rounded-full for pills/buttons). Nested radii: child must be smaller than parent.",
+    "textures": "Subtle SVG noise overlay on hero sections to kill 'digital flatness'."
+  },
+  "components": {
+    "buttons": "Pill-shaped (rounded-full). Primary uses brand color (#D95D39). Hover effect: scale up slightly (scale-105) + shadow increase. MUST explicitly set hover text color.",
+    "cards": "Book/Course Cards: Flat surface, border-border, inner padding p-4 or p-6. Image takes top 60%. Hover: image scale-105 (overflow-hidden).",
+    "forms": "Use Shadcn customized forms. Inputs should have bg-white (or bg-stone-800 in dark mode), ring-primary on focus. Crisp rounded-lg.",
+    "admin_tables": "Clean, flat. No row borders except a subtle bottom border. Text left aligned. Hover row background: surface color.",
+    "qr_upload_flow": "Use a clear step-by-step Bento layout. Step 1: Scan QR (display image clearly). Step 2: Upload File (dashed border dropzone).",
+    "toasts": "Use Sonner for all notifications. Position bottom-right."
+  },
+  "motion": {
+    "transitions": "Specific properties only. transition-transform duration-300 ease-out. NEVER use 'transition-all'.",
+    "entrance": "Staggered fade-up for lists (Books/Courses). y: 20, opacity: 0 to 1 over 0.5s.",
+    "hover": "Micro-interactions on all cards and buttons. Avoid heavy 3D flips, prefer subtle lifts (-translate-y-1)."
+  },
+  "media": {
+    "image_urls": {
+      "hero_vibes": [
+        {
+          "url": "https://images.unsplash.com/photo-1630343710506-89f8b9f21d31?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHwxfHxwZXJzb24lMjByZWFkaW5nJTIwYm9vayUyMGNvenklMjBpbnRlcmlvcnxlbnwwfHx8fDE3ODYxMTU0MTl8MA&ixlib=rb-4.1.0&q=85",
+          "description": "Person reading book on brown textile (Use for Hero background or 'Why Buy' section)"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1608499500238-1536c6dd482f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHwyfHxwZXJzb24lMjByZWFkaW5nJTIwYm9vayUyMGNvenklMjBpbnRlcmlvcnxlbnwwfHx8fDE3ODYxMTU0MTl8MA&ixlib=rb-4.1.0&q=85",
+          "description": "Woman reading sitting on black sofa"
+        }
+      ],
+      "books": [
+        {
+          "url": "https://images.unsplash.com/photo-1614983099486-fd0ef224a916?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2MzR8MHwxfHNlYXJjaHwxfHxib29rJTIwbGF5aW5nJTIwZmxhdCUyMG9uJTIwdGFibGUlMjB3YXJtJTIwbGlnaHR8ZW58MHx8fHwxNzg2MTE1NDE5fDA&ixlib=rb-4.1.0&q=85",
+          "description": "Red book flatlay (Book Cover Placeholder 1)"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1746686240962-0dc260956ac4?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2MzR8MHwxfHNlYXJjaHw0fHxib29rJTIwbGF5aW5nJTIwZmxhdCUyMG9uJTIwdGFibGUlMjB3YXJtJTIwbGlnaHR8ZW58MHx8fHwxNzg2MTE1NDE5fDA&ixlib=rb-4.1.0&q=85",
+          "description": "Open book text (Book Cover Placeholder 2)"
+        }
+      ],
+      "courses": [
+        {
+          "url": "https://images.pexels.com/photos/29791620/pexels-photo-29791620.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+          "description": "Warm cozy workspace with laptop (Course Cover Placeholder 1)"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1769794370990-614f765fa360?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTF8MHwxfHNlYXJjaHwzfHxsYXB0b3AlMjBub3RlYm9vayUyMHN0dWR5aW5nJTIwd2FybSUyMGRlc2t8ZW58MHx8fHwxNzg2MTE1NDE5fDA&ixlib=rb-4.1.0&q=85",
+          "description": "Lit candle open notebook and laptop (Course Cover Placeholder 2)"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1585832770485-e68a5dbfad52?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTF8MHwxfHNlYXJjaHwxfHxsYXB0b3AlMjBub3RlYm9vayUyMHN0dWR5aW5nJTIwd2FybSUyMGRlc2t8ZW58MHx8fHwxNzg2MTE1NDE5fDA&ixlib=rb-4.1.0&q=85",
+          "description": "Macbook air on wooden table (Course Cover Placeholder 3)"
+        }
+      ],
+      "avatars": [
+        {
+          "url": "https://images.unsplash.com/photo-1580489944761-15a19d654956?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDB8MHwxfHNlYXJjaHw0fHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdCUyMHNtaWxpbmd8ZW58MHx8fHwxNzg2MTE1NDE5fDA&ixlib=rb-4.1.0&q=85",
+          "description": "Testimonial Avatar 1"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDB8MHwxfHNlYXJjaHwzfHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdCUyMHNtaWxpbmd8ZW58MHx8fHwxNzg2MTE1NDE5fDA&ixlib=rb-4.1.0&q=85",
+          "description": "Testimonial Avatar 2"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDB8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdCUyMHNtaWxpbmd8ZW58MHx8fHwxNzg2MTE1NDE5fDA&ixlib=rb-4.1.0&q=85",
+          "description": "Testimonial Avatar 3"
+        }
+      ]
+    }
+  },
+  "accessibility": {
+    "testing": "All interactive and key informational elements MUST include a `data-testid` attribute. Convention: kebab-case, role-based. e.g., `data-testid=\"checkout-submit-button\"`.",
+    "contrast": "Ensure minimum 4.5:1 ratio. No light gray text on white. Use deep charcoal or stone for text. Focus rings must be visible (`focus:ring-2 focus:ring-primary`)."
+  },
+  "instructions_to_main_agent": {
+    "architecture": "Build a hybrid app. E-commerce frontend (Home, Books, Courses, Checkout) + Admin Panel (/admin). Ensure Dark/Light mode toggle works globally.",
+    "icons": "Use lucide-react. Ensure icons in admin sidebar and frontend features match the premium/minimalist vibe.",
+    "components_path": "/app/frontend/src/components/",
+    "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+      "You tend to converge toward generic outputs. Avoid this: make creative, distinctive frontends that surprise and delight.",
+      "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients.",
+      "Don't make generic centered layouts. Create depth through layered design elements with z-index hierarchy.",
+      "Use glass-morphism effects with backdrop filters (12-24px blur) for headers and sticky elements, but NEVER fully transparent without a solid base.",
+      "You MUST NOT apply universal transition. Eg: `transition: all`. Always add transitions for specific interactive elements.",
+      "You MUST NOT center align the app container. No `.App { text-align: center; }`.",
+      "Always use modern button styles like pill-shaped with interaction animations and brand colors.",
+      "NEVER use AI assistant Emoji characters (like robot, brain, etc.) for icons.",
+      "Every interaction needs micro-animations (hover states, focus states).",
+      "Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.",
+      "Main agent relies on the provided image URLs. NEVER use placeholder text or dummy image URLs.",
+      "Prioritize using Shadcn components for forms, tables, and dialogs. Use purely custom HTML/Tailwind for marketing/hero layouts.",
+      "Use `sonner` for toasts.",
+      "Apply `data-testid` to all actionable elements (buttons, links, form inputs) to support testing."
+    ]
+  }
+}
