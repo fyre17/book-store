@@ -243,6 +243,21 @@ async def admin_me(admin=Depends(require_admin)):
     return admin
 
 
+class ChangePasswordIn(BaseModel):
+    current_password: str
+    new_password: str
+
+@api.post("/admin/change-password")
+async def change_password(body: ChangePasswordIn, admin=Depends(require_admin)):
+    if len(body.new_password) < 6:
+        raise HTTPException(400, "New password must be at least 6 characters")
+    doc = await db.admins.find_one({"id": admin["id"]})
+    if not doc or not verify_pw(body.current_password, doc["password"]):
+        raise HTTPException(401, "Current password is incorrect")
+    await db.admins.update_one({"id": admin["id"]}, {"$set": {"password": hash_pw(body.new_password)}})
+    return {"ok": True}
+
+
 # ---------- Books ----------
 @api.get("/books")
 async def list_books(q: Optional[str] = None, search: Optional[str] = None,

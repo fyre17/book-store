@@ -6,8 +6,9 @@ import { BookOpen, Lock } from "lucide-react";
 
 export default function AdminLogin() {
   const nav = useNavigate();
-  const [email, setEmail] = useState("admin@bookstore.com");
-  const [password, setPassword] = useState("Admin@123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const submit = async (e) => {
@@ -32,18 +33,27 @@ export default function AdminLogin() {
         </Link>
         <p className="mt-8 text-xs uppercase tracking-[0.2em] font-bold text-primary">Admin</p>
         <h1 className="mt-2 font-serif text-3xl font-bold">Sign in.</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Default: admin@bookstore.com / Admin@123</p>
+        <p className="mt-2 text-sm text-muted-foreground">Enter your admin credentials to continue.</p>
 
         <form onSubmit={submit} className="mt-8 space-y-4">
           <div>
             <label className="text-xs uppercase tracking-[0.2em] font-bold text-muted-foreground">Email</label>
             <input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} data-testid="admin-email"
+              autoComplete="username"
               className="mt-2 w-full rounded-lg border border-border bg-background px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary/40" />
           </div>
           <div>
             <label className="text-xs uppercase tracking-[0.2em] font-bold text-muted-foreground">Password</label>
-            <input required type="password" value={password} onChange={(e) => setPassword(e.target.value)} data-testid="admin-password"
-              className="mt-2 w-full rounded-lg border border-border bg-background px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary/40" />
+            <div className="mt-2 relative">
+              <input required type={showPw ? "text" : "password"} value={password}
+                onChange={(e) => setPassword(e.target.value)} data-testid="admin-password"
+                autoComplete="current-password"
+                className="w-full rounded-lg border border-border bg-background px-4 py-2.5 pr-20 outline-none focus:ring-2 focus:ring-primary/40" />
+              <button type="button" onClick={() => setShowPw((v) => !v)} data-testid="show-pw"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-xs px-2 py-1 rounded hover:bg-secondary text-muted-foreground">
+                {showPw ? "Hide" : "Show"}
+              </button>
+            </div>
           </div>
           <button disabled={busy} data-testid="admin-signin"
             className="w-full rounded-full bg-primary text-primary-foreground px-6 py-3 text-sm font-semibold hover:scale-[1.02] transition-transform disabled:opacity-60">

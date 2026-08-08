@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, mediaUrl, BACKEND_URL } from "@/lib/api";
 import { toast } from "sonner";
-import { Save, Upload } from "lucide-react";
+import { Save, Upload, KeyRound, Eye, EyeOff } from "lucide-react";
 
 const F = ({ label, hint, children }) => (
   <label className="block">
@@ -93,6 +93,8 @@ export default function AdminSettings() {
         </div>
       </section>
 
+      <ChangePassword />
+
       <section className="rounded-2xl border border-border p-6 bg-card space-y-4">
         <p className="text-xs uppercase tracking-[0.2em] font-bold text-muted-foreground">Social</p>
         <div className="grid md:grid-cols-2 gap-4">
@@ -103,5 +105,61 @@ export default function AdminSettings() {
         </div>
       </section>
     </div>
+  );
+}
+
+function ChangePassword() {
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [show, setShow] = useState({ c: false, n: false, x: false });
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (next.length < 6) return toast.error("New password must be at least 6 characters");
+    if (next !== confirm) return toast.error("New passwords do not match");
+    setBusy(true);
+    try {
+      await api.post("/admin/change-password", { current_password: current, new_password: next });
+      toast.success("Password updated");
+      setCurrent(""); setNext(""); setConfirm("");
+    } catch (err) {
+      toast.error(err?.response?.data?.detail || "Failed to update password");
+    } finally { setBusy(false); }
+  };
+
+  const Field = ({ label, value, onChange, showKey, testid }) => (
+    <label className="block">
+      <span className="text-xs uppercase tracking-[0.2em] font-bold text-muted-foreground">{label}</span>
+      <div className="mt-2 relative">
+        <input required type={show[showKey] ? "text" : "password"} value={value} onChange={onChange}
+          autoComplete="new-password" data-testid={testid}
+          className="w-full rounded-lg border border-border bg-background px-3 py-2 pr-20 text-sm outline-none focus:ring-2 focus:ring-primary/40" />
+        <button type="button" onClick={() => setShow((s) => ({ ...s, [showKey]: !s[showKey] }))}
+          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-secondary text-muted-foreground">
+          {show[showKey] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+        </button>
+      </div>
+    </label>
+  );
+
+  return (
+    <section className="rounded-2xl border border-border p-6 bg-card space-y-4">
+      <div className="flex items-center gap-2">
+        <KeyRound className="w-4 h-4 text-primary" />
+        <p className="text-xs uppercase tracking-[0.2em] font-bold text-muted-foreground">Change password</p>
+      </div>
+      <p className="text-xs text-muted-foreground">Your password is stored as a one-way hash. It is never displayed or emailed.</p>
+      <form onSubmit={submit} className="grid md:grid-cols-3 gap-4 items-end">
+        <Field label="Current password" value={current} onChange={(e) => setCurrent(e.target.value)} showKey="c" testid="pw-current" />
+        <Field label="New password" value={next} onChange={(e) => setNext(e.target.value)} showKey="n" testid="pw-new" />
+        <Field label="Confirm new password" value={confirm} onChange={(e) => setConfirm(e.target.value)} showKey="x" testid="pw-confirm" />
+        <button disabled={busy} data-testid="pw-submit"
+          className="md:col-span-3 justify-self-start rounded-full bg-primary text-primary-foreground px-5 py-2.5 text-sm font-semibold hover:scale-105 transition-transform disabled:opacity-60 disabled:hover:scale-100">
+          {busy ? "Updating..." : "Update password"}
+        </button>
+      </form>
+    </section>
   );
 }
