@@ -245,15 +245,17 @@ async def admin_me(admin=Depends(require_admin)):
 
 # ---------- Books ----------
 @api.get("/books")
-async def list_books(q: Optional[str] = None, category: Optional[str] = None,
+async def list_books(q: Optional[str] = None, search: Optional[str] = None,
+                     category: Optional[str] = None,
                      min_price: Optional[float] = None, max_price: Optional[float] = None,
                      sort: str = "latest", visible_only: bool = True):
     query = {}
     if visible_only:
         query["visible"] = True
-    if q:
-        query["$or"] = [{"title": {"$regex": q, "$options": "i"}},
-                        {"author": {"$regex": q, "$options": "i"}}]
+    term = q or search
+    if term:
+        query["$or"] = [{"title": {"$regex": term, "$options": "i"}},
+                        {"author": {"$regex": term, "$options": "i"}}]
     if category and category != "All":
         query["category"] = category
     if min_price is not None or max_price is not None:
