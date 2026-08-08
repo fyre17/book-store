@@ -1,0 +1,51 @@
+{
+  "summary": "First-finish smoke tests across backend + frontend. Core storefront (home, books listing, checkout->payment->order) and admin (login, dashboard, CRUD, orders, settings) all work end-to-end. Order was successfully created via UI and reflected in admin dashboard (Today's orders: 2, Revenue Rs.1,398). Telegram correctly returns telegram:false / not_configured. Two minor issues found: seeded books count is 4 (not 6 as stated), and backend text search does not filter results.",
+  "tested_scope": ["backend", "frontend", "auth", "integration"],
+  "passed": [
+    "GET /api/books returns seeded books (4 items)",
+    "Books category filter works (Business -> 2 items)",
+    "Books sort=price_asc returns ascending prices",
+    "GET /api/courses returns 3 seeded courses",
+    "GET /api/settings/public does NOT expose telegram_bot_token",
+    "POST /api/admin/login returns token; wrong password -> 401",
+    "POST /api/admin/books create, PUT update (with full body), DELETE all work with JWT",
+    "PUT /api/admin/settings updates settings (upi_id) -> 200",
+    "POST /api/orders (multipart, item_type=book, agreed=true) returns ok:true, order_id, telegram:false",
+    "POST /api/orders with agreed=false returns 400",
+    "POST /api/upload returns /uploads/{name}.png url",
+    "GET /api/admin/orders (1 order), PUT status update -> 200, GET /api/admin/customers (1), GET /api/admin/dashboard returns full stats",
+    "POST /api/newsletter and /api/contact accept payloads (200)",
+    "Frontend Home loads with hero, nav-home present",
+    "Frontend Books page: books-search, sort-select, cat-* buttons all present; grid renders",
+    "Frontend end-to-end order flow: Buy Now -> /checkout -> fill fields + agree -> /payment -> upload PNG + txn -> success toast 'Order placed! We'll confirm on WhatsApp shortly.'",
+    "Admin login UI works and lands on /admin/dashboard with charts and stats (Today's orders 2, Revenue Rs.1,398)"
+  ],
+  "failed": [
+    {
+      "area": "Backend / GET /api/books search",
+      "issue": "Search query parameter (?search=founder) is ignored — endpoint returns all books regardless of the term.",
+      "evidence": "curl '.../api/books?search=founder' returned all 4 titles including 'Milk and Honey', 'Letters to a Younger Self', etc.",
+      "priority": "MEDIUM"
+    },
+    {
+      "area": "Data / Seeded books count",
+      "issue": "Problem statement expects 6 seeded books; DB / API returns only 4. Frontend also shows '4 books'.",
+      "evidence": "GET /api/books count=4; Books page UI 'The Library' shows '4 books'.",
+      "priority": "LOW"
+    },
+    {
+      "area": "Admin login response key",
+      "issue": "Login returns key 'token' instead of 'access_token' mentioned in the request spec. Frontend works because it consumes 'token', but worth confirming the intended contract.",
+      "evidence": "POST /api/admin/login response: {\"token\":\"eyJhbGciOi...\",\"admin\":{...}}",
+      "priority": "LOW"
+    }
+  ],
+  "action_items": [
+    "Fix /api/books search filter so ?search=<term> actually matches title/author (case-insensitive).",
+    "Verify seeder inserts all 6 books (currently only 4 are present in DB); reseed or update spec.",
+    "Optional: align login response key naming with spec (access_token) or update spec."
+  ],
+  "success_rate": {"backend": "92%", "frontend": "100%"},
+  "retest_needed": false,
+  "full_testing_deferred": true
+}
