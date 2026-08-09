@@ -30,7 +30,7 @@ export default function Courses() {
       </section>
 
       <section className="max-w-7xl mx-auto px-4 sm:px-8 py-14">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {courses.map((c, i) => (
             <motion.div key={c.id}
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}

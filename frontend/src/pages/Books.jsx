@@ -36,10 +36,32 @@ export default function Books() {
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-8 py-10">
+      {/* Mobile filter toolbar */}
+      <div className="lg:hidden max-w-7xl mx-auto px-4 sm:px-8 pt-6 space-y-3">
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search title or author"
+          data-testid="books-search-mobile"
+          className="w-full min-h-[44px] rounded-full border border-border bg-background px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/40" />
+        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+          {cats.map((c) => (
+            <button key={c} onClick={() => setCat(c)} data-testid={`cat-m-${c.toLowerCase()}`}
+              className={`shrink-0 text-xs rounded-full px-4 py-2 border min-h-[36px] transition-colors ${cat === c ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-secondary"}`}>
+              {c}
+            </button>
+          ))}
+        </div>
+        <select value={sort} onChange={(e) => setSort(e.target.value)} data-testid="sort-select-mobile"
+          className="w-full min-h-[44px] rounded-lg border border-border bg-background px-4 py-2.5 text-sm">
+          <option value="latest">Sort · Latest</option>
+          <option value="popular">Sort · Most Popular</option>
+          <option value="price_asc">Sort · Price low to high</option>
+          <option value="price_desc">Sort · Price high to low</option>
+        </select>
+      </div>
+
+      <section className="max-w-7xl mx-auto px-4 sm:px-8 py-6 lg:py-10">
         <div className="grid lg:grid-cols-12 gap-8">
-          {/* Sidebar */}
-          <aside className="lg:col-span-3 lg:sticky lg:top-24 h-fit">
+          {/* Sidebar (desktop) */}
+          <aside className="hidden lg:block lg:col-span-3 lg:sticky lg:top-24 h-fit">
             <div className="rounded-2xl border border-border p-6 bg-card space-y-6">
               <div>
                 <label className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] font-bold text-muted-foreground">
@@ -98,13 +120,13 @@ export default function Books() {
 
           {/* Grid */}
           <div className="lg:col-span-9">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-4 lg:mb-6">
               <p className="text-sm text-muted-foreground"><span className="tabular-nums font-medium text-foreground">{books.length}</span> books</p>
             </div>
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {[...Array(6)].map((_, i) => (
-                  <div key={i} className="rounded-2xl border border-border h-96 animate-pulse bg-secondary/50" />
+                  <div key={i} className="rounded-2xl border border-border h-72 sm:h-96 animate-pulse bg-secondary/50" />
                 ))}
               </div>
             ) : books.length === 0 ? (
@@ -113,7 +135,7 @@ export default function Books() {
                 <p className="text-muted-foreground mt-2">Try a different category or search.</p>
               </div>
             ) : (
-              <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <motion.div layout className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {books.map((b, i) => (
                   <motion.div key={b.id}
                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}

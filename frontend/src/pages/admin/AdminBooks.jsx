@@ -48,9 +48,39 @@ export default function AdminBooks() {
       </div>
 
       <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search books..." data-testid="admin-books-search"
-        className="w-full max-w-md rounded-lg border border-border bg-background px-4 py-2 text-sm" />
+        className="w-full max-w-md rounded-lg border border-border bg-background px-4 py-2.5 text-sm min-h-[44px]" />
 
-      <div className="rounded-2xl border border-border bg-card overflow-hidden">
+      {/* Mobile card list */}
+      <div className="md:hidden space-y-3">
+        {books.map((b) => (
+          <div key={b.id} className="rounded-2xl border border-border bg-card p-4 flex gap-3" data-testid={`m-book-${b.id}`}>
+            <img src={mediaUrl(b.image)} alt={b.title} className="w-16 h-20 rounded object-cover border border-border shrink-0 bg-secondary" />
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold truncate">{b.title}</p>
+              <p className="text-xs text-muted-foreground truncate">{b.author} · {b.category}</p>
+              <div className="mt-2 flex items-center gap-3 text-xs">
+                <span className="font-mono font-semibold tabular-nums">₹{b.offer_price || b.price}</span>
+                <span className="text-muted-foreground">Stock: <span className="tabular-nums">{b.stock}</span></span>
+                {!b.visible && <span className="text-[10px] uppercase tracking-widest bg-secondary px-2 py-0.5 rounded-full">Hidden</span>}
+              </div>
+              <div className="mt-3 flex gap-2">
+                <button onClick={() => startEdit(b)} data-testid={`m-edit-book-${b.id}`}
+                  className="flex-1 min-h-[40px] inline-flex items-center justify-center gap-1.5 text-xs font-medium rounded-lg border border-border hover:bg-secondary">
+                  <Pencil className="w-3.5 h-3.5" /> Edit
+                </button>
+                <button onClick={() => del(b.id)} data-testid={`m-del-book-${b.id}`}
+                  className="min-h-[40px] px-3 inline-flex items-center justify-center rounded-lg border border-border text-destructive hover:bg-destructive/10">
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+        {books.length === 0 && <p className="text-sm text-muted-foreground text-center py-10">No books yet.</p>}
+      </div>
+
+      {/* Desktop table */}
+      <div className="hidden md:block rounded-2xl border border-border bg-card overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-xs uppercase tracking-[0.15em] text-muted-foreground bg-secondary/40">

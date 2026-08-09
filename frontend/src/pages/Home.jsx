@@ -58,8 +58,8 @@ export default function Home() {
       {/* HERO */}
       <section className="relative overflow-hidden warm-gradient">
         <div className="grain absolute inset-0" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-8 pt-20 pb-24 md:pt-28 md:pb-32">
-          <div className="grid lg:grid-cols-12 gap-12 items-center">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-8 pt-12 pb-16 md:pt-28 md:pb-32">
+          <div className="grid lg:grid-cols-12 gap-8 md:gap-12 items-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
               className="lg:col-span-7"
@@ -67,28 +67,28 @@ export default function Home() {
               <span className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] font-bold text-primary">
                 <Sparkles className="w-3.5 h-3.5" /> New titles, every Sunday
               </span>
-              <h1 className="mt-6 font-serif text-5xl md:text-6xl lg:text-7xl font-bold leading-[0.95] tracking-tight text-foreground">
+              <h1 className="mt-6 font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[0.95] tracking-tight text-foreground">
                 Books that build
                 <br />
                 <em className="italic text-primary">better minds.</em>
               </h1>
-              <p className="mt-6 max-w-xl text-lg text-muted-foreground leading-relaxed">
+              <p className="mt-6 max-w-xl text-base sm:text-lg text-muted-foreground leading-relaxed">
                 A hand-picked storefront for readers, makers and slow thinkers. Premium books & studio-grade courses — with instant confirmation on Telegram.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Link to="/books" data-testid="hero-shop-books" className="group inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-6 py-3 text-sm font-semibold hover:scale-105 hover:shadow-[0_20px_40px_rgb(217,93,57,0.25)] transition-[transform,box-shadow] duration-300">
+                <Link to="/books" data-testid="hero-shop-books" className="group inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-6 py-3 text-sm font-semibold min-h-[44px] hover:scale-105 hover:shadow-[0_20px_40px_rgb(217,93,57,0.25)] transition-[transform,box-shadow] duration-300">
                   Shop books <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                 </Link>
-                <Link to="/courses" data-testid="hero-view-courses" className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-6 py-3 text-sm font-semibold hover:bg-secondary transition-colors duration-200">
+                <Link to="/courses" data-testid="hero-view-courses" className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-6 py-3 text-sm font-semibold min-h-[44px] hover:bg-secondary transition-colors duration-200">
                   Browse courses <ArrowUpRight className="w-4 h-4" />
                 </Link>
               </div>
-              <div className="mt-10 flex items-center gap-8 text-xs uppercase tracking-[0.15em] text-muted-foreground">
-                <div><span className="font-mono text-2xl font-semibold text-foreground tabular-nums">12,400+</span><br />Readers</div>
+              <div className="mt-10 flex items-center gap-5 sm:gap-8 text-xs uppercase tracking-[0.15em] text-muted-foreground">
+                <div><span className="font-mono text-xl sm:text-2xl font-semibold text-foreground tabular-nums">12,400+</span><br />Readers</div>
                 <div className="h-8 w-px bg-border" />
-                <div><span className="font-mono text-2xl font-semibold text-foreground tabular-nums">4.9</span><br />Avg rating</div>
+                <div><span className="font-mono text-xl sm:text-2xl font-semibold text-foreground tabular-nums">4.9</span><br />Avg rating</div>
                 <div className="h-8 w-px bg-border" />
-                <div><span className="font-mono text-2xl font-semibold text-foreground tabular-nums">98%</span><br />On-time</div>
+                <div><span className="font-mono text-xl sm:text-2xl font-semibold text-foreground tabular-nums">98%</span><br />On-time</div>
               </div>
             </motion.div>
 

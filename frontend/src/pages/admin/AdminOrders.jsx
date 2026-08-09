@@ -45,7 +45,33 @@ export default function AdminOrders() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card overflow-hidden">
+      {/* Mobile card list */}
+      <div className="md:hidden space-y-3">
+        {orders.map((o) => (
+          <div key={o.id} className="rounded-2xl border border-border bg-card p-4" data-testid={`m-order-${o.id}`}>
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="font-mono text-xs text-muted-foreground">#{o.id.slice(0, 8)}</p>
+                <p className="mt-0.5 font-semibold truncate">{o.full_name}</p>
+                <p className="text-xs text-muted-foreground truncate">{o.whatsapp}</p>
+              </div>
+              <span className={`shrink-0 text-[10px] uppercase tracking-widest rounded-full px-2.5 py-1 ${badge[o.status] || "bg-secondary"}`}>{o.status}</span>
+            </div>
+            <div className="mt-3 text-sm">
+              <p className="truncate"><span className="text-muted-foreground text-xs">Item:</span> {o.item_title} × {o.quantity}</p>
+              <p className="mt-1"><span className="text-muted-foreground text-xs">Total:</span> <span className="font-mono font-semibold tabular-nums">₹{o.total}</span></p>
+              <p className="mt-1 text-xs text-muted-foreground">{o.created_at?.slice(0, 10)}</p>
+            </div>
+            <button onClick={() => setDetail(o)} className="mt-3 w-full min-h-[40px] inline-flex items-center justify-center gap-1.5 text-xs font-medium rounded-lg border border-border hover:bg-secondary" data-testid={`m-view-${o.id}`}>
+              View details
+            </button>
+          </div>
+        ))}
+        {orders.length === 0 && <p className="text-sm text-muted-foreground text-center py-10">No orders yet.</p>}
+      </div>
+
+      {/* Desktop table */}
+      <div className="hidden md:block rounded-2xl border border-border bg-card overflow-hidden">
         <table className="w-full text-sm">
           <thead><tr className="text-left text-xs uppercase tracking-[0.15em] text-muted-foreground bg-secondary/40">
             <th className="p-4">Order</th><th className="p-4 hidden md:table-cell">Customer</th><th className="p-4">Total</th><th className="p-4">Status</th><th className="p-4"></th>

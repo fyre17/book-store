@@ -40,7 +40,39 @@ export default function AdminCourses() {
         </button>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card overflow-hidden">
+      {/* Mobile cards */}
+      <div className="md:hidden space-y-3">
+        {items.map((c) => (
+          <div key={c.id} className="rounded-2xl border border-border bg-card p-4" data-testid={`m-course-${c.id}`}>
+            <div className="flex gap-3">
+              <img src={mediaUrl(c.image)} alt={c.title} className="w-20 h-16 rounded object-cover border border-border shrink-0 bg-secondary" />
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold truncate">{c.title}</p>
+                <p className="text-xs text-muted-foreground line-clamp-2">{c.description}</p>
+              </div>
+            </div>
+            <div className="mt-3 flex items-center gap-3 text-xs">
+              <span className="font-mono font-semibold tabular-nums">₹{c.offer_price || c.price}</span>
+              <span className="text-muted-foreground">{c.duration || "—"}</span>
+              {!c.visible && <span className="text-[10px] uppercase tracking-widest bg-secondary px-2 py-0.5 rounded-full">Hidden</span>}
+            </div>
+            <div className="mt-3 flex gap-2">
+              <button onClick={() => start(c)} data-testid={`m-edit-course-${c.id}`}
+                className="flex-1 min-h-[40px] inline-flex items-center justify-center gap-1.5 text-xs font-medium rounded-lg border border-border hover:bg-secondary">
+                <Pencil className="w-3.5 h-3.5" /> Edit
+              </button>
+              <button onClick={() => del(c.id)} data-testid={`m-del-course-${c.id}`}
+                className="min-h-[40px] px-3 inline-flex items-center justify-center rounded-lg border border-border text-destructive hover:bg-destructive/10">
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        ))}
+        {items.length === 0 && <p className="text-sm text-muted-foreground text-center py-10">No courses yet.</p>}
+      </div>
+
+      {/* Desktop table */}
+      <div className="hidden md:block rounded-2xl border border-border bg-card overflow-hidden">
         <table className="w-full text-sm">
           <thead><tr className="text-left text-xs uppercase tracking-[0.15em] text-muted-foreground bg-secondary/40">
             <th className="p-4">Course</th><th className="p-4 hidden md:table-cell">Duration</th><th className="p-4">Price</th><th className="p-4">Actions</th>
