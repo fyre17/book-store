@@ -26,15 +26,14 @@ export default function AdminSettings() {
   };
 
   const qrBox = (key, label) => (
-    <div className="rounded-2xl border border-border p-4 bg-background text-center">
-      <p className="text-xs uppercase tracking-[0.2em] font-bold text-muted-foreground">{label}</p>
-      {s[key] ? <img src={mediaUrl(s[key])} alt={label} className="mt-3 mx-auto max-h-40 rounded" /> :
-        <div className="mt-3 h-40 rounded border border-dashed border-border grid place-items-center text-xs text-muted-foreground">No image</div>}
-      <label className="mt-3 inline-flex items-center gap-2 text-xs cursor-pointer link-underline">
-        <Upload className="w-3 h-3" /> {s[key] ? "Replace" : "Upload"}
-        <input type="file" accept="image/*" className="hidden" onChange={(e) => uploadQR(key, e)} data-testid={`upload-${key}`} />
-      </label>
-    </div>
+    <ImageUpload
+      key={key}
+      label={label}
+      folder="qr"
+      value={s[key]}
+      onChange={(url) => set(key, url)}
+      testid={`qr-${key}`}
+    />
   );
 
   return (
