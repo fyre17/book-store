@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { api, mediaUrl, BACKEND_URL } from "@/lib/api";
+import { api, mediaUrl } from "@/lib/api";
 import { toast } from "sonner";
-import { Pencil, Plus, Trash2, X, Upload } from "lucide-react";
+import { Pencil, Plus, Trash2, X } from "lucide-react";
+import ImageUpload from "@/components/ImageUpload";
 
 const empty = { title: "", author: "", category: "", description: "", image: "", price: 0, offer_price: null, rating: 4.5, stock: 100, featured: false, visible: true };
 
@@ -34,13 +35,6 @@ export default function AdminBooks() {
     await api.delete(`/admin/books/${id}`); load(); toast.success("Deleted");
   };
 
-  const uploadImage = async (e) => {
-    const f = e.target.files?.[0]; if (!f) return;
-    const fd = new FormData(); fd.append("file", f);
-    const res = await api.post("/upload", fd);
-    setForm((s) => ({ ...s, image: `${BACKEND_URL}${res.data.url}` }));
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex items-end justify-between gap-4">
@@ -67,7 +61,7 @@ export default function AdminBooks() {
             {books.map((b) => (
               <tr key={b.id} className="hover:bg-secondary/40 transition-colors">
                 <td className="p-4 flex items-center gap-3">
-                  <img src={mediaUrl(b.image)} alt={b.title} className="w-10 h-12 rounded object-cover border border-border" />
+                  <img src={mediaUrl(b.image)} alt={b.title} className="w-10 h-12 rounded object-cover border border-border bg-secondary" />
                   <div>
                     <p className="font-semibold">{b.title}</p>
                     <p className="text-xs text-muted-foreground">{b.author}</p>
@@ -101,13 +95,14 @@ export default function AdminBooks() {
               <F label="Price"><input required type="number" min="0" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className={inp} data-testid="book-price" /></F>
               <F label="Offer price"><input type="number" min="0" value={form.offer_price ?? ""} onChange={(e) => setForm({ ...form, offer_price: e.target.value || null })} className={inp} /></F>
               <F label="Stock"><input type="number" min="0" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} className={inp} /></F>
-              <F label="Image URL">
-                <div className="flex gap-2">
-                  <input value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} className={inp} placeholder="https://..." />
-                  <label className="rounded-lg border border-border px-3 py-2 hover:bg-secondary cursor-pointer"><Upload className="w-4 h-4" /><input type="file" accept="image/*" className="hidden" onChange={uploadImage} /></label>
-                </div>
-              </F>
             </div>
+            <ImageUpload
+              label="Book cover"
+              folder="products"
+              value={form.image}
+              onChange={(url) => setForm((s) => ({ ...s, image: url }))}
+              testid="book-image"
+            />
             <F label="Description">
               <textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className={`${inp} resize-none`} />
             </F>

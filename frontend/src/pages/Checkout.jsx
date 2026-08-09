@@ -11,7 +11,7 @@ export default function Checkout() {
 
   const initial = state?.item || pending?.item;
   const type = state?.type || pending?.type || "book";
-  const [qty, setQty] = useState(pending?.quantity || 1);
+  const [qty, setQty] = useState(state?.quantity || pending?.quantity || 1);
   const [form, setForm] = useState(
     pending?.form || {
       full_name: "", whatsapp: "", alt_mobile: "", email: "",

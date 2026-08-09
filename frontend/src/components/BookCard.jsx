@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Heart, Star } from "lucide-react";
-import { mediaUrl } from "@/lib/api";
+import { mediaUrl, PLACEHOLDER } from "@/lib/api";
 import { toggleWishlist, isWished } from "@/lib/cart";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -12,7 +12,7 @@ export default function BookCard({ book, type = "book" }) {
   const off = hasOffer ? Math.round(((book.price - book.offer_price) / book.price) * 100) : 0;
 
   const onWish = (e) => {
-    e.preventDefault();
+    e.preventDefault(); e.stopPropagation();
     toggleWishlist(book.id);
     setWished((w) => !w);
     toast.success(wished ? "Removed from wishlist" : "Saved to wishlist");
@@ -23,11 +23,14 @@ export default function BookCard({ book, type = "book" }) {
       data-testid={`${type}-card-${book.id}`}
       className="group relative flex flex-col rounded-2xl border border-border bg-card overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-1 hover:shadow-[0_20px_40px_rgb(0,0,0,0.06)] transition-[transform,box-shadow] duration-300"
     >
-      <div className="relative aspect-[4/5] overflow-hidden bg-secondary">
+      <Link to={`/${type === "course" ? "courses" : "books"}/${book.id}`}
+        className="relative aspect-[4/5] overflow-hidden bg-secondary block"
+        data-testid={`open-${type}-${book.id}`}>
         <img
-          src={mediaUrl(book.image) || "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800"}
+          src={mediaUrl(book.image)}
           alt={book.title}
           loading="lazy"
+          onError={(e) => { if (e.currentTarget.src !== PLACEHOLDER) e.currentTarget.src = PLACEHOLDER; }}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
         {hasOffer && (
@@ -49,7 +52,7 @@ export default function BookCard({ book, type = "book" }) {
         {type === "book" && book.stock === 0 && (
           <span className="absolute bottom-3 left-3 text-[10px] uppercase tracking-widest font-bold bg-destructive text-destructive-foreground px-2.5 py-1 rounded-full">Sold out</span>
         )}
-      </div>
+      </Link>
       <div className="flex flex-col flex-1 p-5">
         <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-muted-foreground">
           {type === "book" ? book.category : book.duration || "Course"}

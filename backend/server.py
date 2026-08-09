@@ -2,7 +2,7 @@
 Books & Courses e-commerce with admin panel, checkout, and Telegram order notifications.
 """
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, UploadFile, File, Form, Request
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import Response
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -11,17 +11,90 @@ from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
-import os, uuid, logging, bcrypt, jwt, httpx, shutil
+from io import BytesIO
+import os, uuid, logging, bcrypt, jwt, httpx, requests
+from PIL import Image
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
 
-UPLOAD_DIR = ROOT_DIR / "uploads"
-UPLOAD_DIR.mkdir(exist_ok=True)
-
 JWT_SECRET = os.environ.get("JWT_SECRET", "bookstore-pro-secret-change-me")
 JWT_ALG = "HS256"
 JWT_EXP_HOURS = 24 * 7
+
+# ---------- Emergent Object Storage ----------
+APP_NAME = "bookstore-pro"
+STORAGE_BASE = (os.environ.get("INTEGRATION_PROXY_URL") or "").strip() or "https://integrations.emergentagent.com"
+STORAGE_URL = STORAGE_BASE.rstrip("/") + "/objstore/api/v1/storage"
+EMERGENT_KEY = os.environ.get("EMERGENT_LLM_KEY")
+_storage_key: Optional[str] = None
+
+def init_storage(force: bool = False) -> Optional[str]:
+    global _storage_key
+    if _storage_key and not force:
+        return _storage_key
+    if not EMERGENT_KEY:
+        logging.warning("EMERGENT_LLM_KEY not set; object storage disabled")
+        return None
+    try:
+        r = requests.post(f"{STORAGE_URL}/init", json={"emergent_key": EMERGENT_KEY}, timeout=30)
+        r.raise_for_status()
+        _storage_key = r.json()["storage_key"]
+        return _storage_key
+    except Exception as e:
+        logging.error(f"Storage init failed: {e}")
+        return None
+
+def storage_put(path: str, data: bytes, content_type: str) -> dict:
+    key = init_storage()
+    if not key:
+        raise HTTPException(500, "Storage not initialized")
+    r = requests.put(f"{STORAGE_URL}/objects/{path}",
+                     headers={"X-Storage-Key": key, "Content-Type": content_type},
+                     data=data, timeout=120)
+    if r.status_code == 404:  # dead key — reinit
+        key = init_storage(force=True)
+        r = requests.put(f"{STORAGE_URL}/objects/{path}",
+                         headers={"X-Storage-Key": key, "Content-Type": content_type},
+                         data=data, timeout=120)
+    r.raise_for_status()
+    return r.json()
+
+def storage_get(path: str):
+    key = init_storage()
+    if not key:
+        raise HTTPException(404, "Storage not initialized")
+    r = requests.get(f"{STORAGE_URL}/objects/{path}",
+                     headers={"X-Storage-Key": key}, timeout=60)
+    if r.status_code == 404:
+        key = init_storage(force=True)
+        r = requests.get(f"{STORAGE_URL}/objects/{path}",
+                         headers={"X-Storage-Key": key}, timeout=60)
+    r.raise_for_status()
+    return r.content, r.headers.get("Content-Type", "application/octet-stream")
+
+
+ALLOWED_IMAGE_MIMES = {"image/jpeg", "image/jpg", "image/png", "image/webp"}
+MAX_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 MB
+
+def compress_image(data: bytes, content_type: str) -> tuple[bytes, str, str]:
+    """Return (compressed_bytes, output_mime, extension). Converts to WEBP for optimal size."""
+    try:
+        img = Image.open(BytesIO(data))
+        if img.mode in ("RGBA", "LA", "P"):
+            img = img.convert("RGBA") if content_type == "image/png" else img.convert("RGB")
+        elif img.mode != "RGB":
+            img = img.convert("RGB")
+        # Cap dimensions to 1600px on the longest edge (retains crisp product cards + detail)
+        img.thumbnail((1600, 1600), Image.LANCZOS)
+        buf = BytesIO()
+        img.save(buf, format="WEBP", quality=85, method=6)
+        return buf.getvalue(), "image/webp", "webp"
+    except Exception as e:
+        logging.warning(f"Image compress failed, storing original: {e}")
+        ext = {"image/png": "png", "image/webp": "webp"}.get(content_type, "jpg")
+        return data, content_type, ext
+
 
 mongo_url = os.environ["MONGO_URL"]
 client = AsyncIOMotorClient(mongo_url)
@@ -165,6 +238,7 @@ class SettingsModel(BaseModel):
 # ---------- Startup: seed admin + settings ----------
 @app.on_event("startup")
 async def seed():
+    init_storage()
     existing = await db.admins.find_one({"email": "admin@bookstore.com"})
     if not existing:
         await db.admins.insert_one({
@@ -385,15 +459,41 @@ async def update_settings(body: SettingsModel, admin=Depends(require_admin)):
     return doc
 
 
-# ---------- File Upload ----------
+# ---------- File Upload (Emergent Object Storage) ----------
+def _upload_image_to_storage(file: UploadFile, folder: str = "products") -> str:
+    """Validate, compress, upload. Returns public API path e.g. /api/files/{path}."""
+    content_type = (file.content_type or "").lower()
+    if content_type not in ALLOWED_IMAGE_MIMES:
+        raise HTTPException(400, "Only JPG, PNG, or WEBP images are allowed")
+    data = file.file.read()
+    if len(data) > MAX_UPLOAD_BYTES:
+        raise HTTPException(413, "Image must be under 10 MB")
+    compressed, mime, ext = compress_image(data, content_type)
+    path = f"{APP_NAME}/{folder}/{uuid.uuid4().hex}.{ext}"
+    storage_put(path, compressed, mime)
+    return path
+
+
 @api.post("/upload")
-async def upload_file(file: UploadFile = File(...)):
-    ext = Path(file.filename or "").suffix or ".png"
-    fname = f"{uuid.uuid4().hex}{ext}"
-    path = UPLOAD_DIR / fname
-    with open(path, "wb") as f:
-        shutil.copyfileobj(file.file, f)
-    return {"url": f"/uploads/{fname}", "filename": fname}
+async def upload_file(file: UploadFile = File(...), folder: str = Form("products"),
+                      admin=Depends(require_admin)):
+    """Admin-only image upload for products. Public assets are served via /api/files/{path}."""
+    if folder not in ("products", "qr"):
+        folder = "products"
+    path = _upload_image_to_storage(file, folder=folder)
+    return {"path": path, "url": f"/api/files/{path}"}
+
+
+@api.get("/files/{path:path}")
+async def serve_file(path: str):
+    try:
+        content, mime = storage_get(path)
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(404, "File not found")
+    return Response(content=content, media_type=mime,
+                    headers={"Cache-Control": "public, max-age=31536000, immutable"})
 
 
 # ---------- Orders ----------
@@ -461,12 +561,17 @@ async def create_order(request: Request,
 
     screenshot_url = None
     if screenshot is not None:
-        ext = Path(screenshot.filename or "").suffix or ".png"
-        fname = f"{uuid.uuid4().hex}{ext}"
-        path = UPLOAD_DIR / fname
-        with open(path, "wb") as f:
-            shutil.copyfileobj(screenshot.file, f)
-        screenshot_url = f"/uploads/{fname}"
+        content_type = (screenshot.content_type or "").lower()
+        if content_type in ALLOWED_IMAGE_MIMES:
+            data = screenshot.file.read()
+            if len(data) <= MAX_UPLOAD_BYTES:
+                compressed, mime, ext = compress_image(data, content_type)
+                spath = f"{APP_NAME}/orders/{uuid.uuid4().hex}.{ext}"
+                try:
+                    storage_put(spath, compressed, mime)
+                    screenshot_url = f"/api/files/{spath}"
+                except Exception as e:
+                    logger.error(f"Screenshot upload failed: {e}")
 
     ua = request.headers.get("user-agent", "")
     ip = request.client.host if request.client else "-"
@@ -641,7 +746,6 @@ async def root():
 
 
 app.include_router(api)
-app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 
 app.add_middleware(
     CORSMiddleware,

@@ -5,7 +5,9 @@ import { ThemeProvider } from "@/lib/theme";
 import { CheckoutProvider } from "@/lib/cart";
 import Home from "@/pages/Home";
 import Books from "@/pages/Books";
+import BookDetail from "@/pages/BookDetail";
 import Courses from "@/pages/Courses";
+import CourseDetail from "@/pages/CourseDetail";
 import Contact from "@/pages/Contact";
 import Checkout from "@/pages/Checkout";
 import Payment from "@/pages/Payment";
@@ -31,7 +33,9 @@ function App() {
               <Route element={<PublicLayout />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/books" element={<Books />} />
+                <Route path="/books/:id" element={<BookDetail />} />
                 <Route path="/courses" element={<Courses />} />
+                <Route path="/courses/:id" element={<CourseDetail />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/wishlist" element={<Wishlist />} />
                 <Route path="/checkout" element={<Checkout />} />

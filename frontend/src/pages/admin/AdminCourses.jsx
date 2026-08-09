@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { api, mediaUrl, BACKEND_URL } from "@/lib/api";
+import { api, mediaUrl } from "@/lib/api";
 import { toast } from "sonner";
-import { Pencil, Plus, Trash2, X, Upload } from "lucide-react";
+import { Pencil, Plus, Trash2, X } from "lucide-react";
+import ImageUpload from "@/components/ImageUpload";
 
 const empty = { title: "", description: "", image: "", duration: "", language: "English", price: 0, offer_price: null, featured: false, visible: true };
 
@@ -26,12 +27,6 @@ export default function AdminCourses() {
 
   const del = async (id) => { if (!confirm("Delete?")) return; await api.delete(`/admin/courses/${id}`); load(); toast.success("Deleted"); };
   const start = (c) => { setEditing(c?.id || null); setForm(c ? { ...empty, ...c } : empty); setOpen(true); };
-  const uploadImage = async (e) => {
-    const f = e.target.files?.[0]; if (!f) return;
-    const fd = new FormData(); fd.append("file", f);
-    const res = await api.post("/upload", fd);
-    setForm((s) => ({ ...s, image: `${BACKEND_URL}${res.data.url}` }));
-  };
 
   return (
     <div className="space-y-6">
@@ -85,13 +80,14 @@ export default function AdminCourses() {
               <F label="Language"><input value={form.language} onChange={(e) => setForm({ ...form, language: e.target.value })} className={inp} /></F>
               <F label="Price"><input required type="number" min="0" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className={inp} data-testid="course-price" /></F>
               <F label="Offer price"><input type="number" min="0" value={form.offer_price ?? ""} onChange={(e) => setForm({ ...form, offer_price: e.target.value || null })} className={inp} /></F>
-              <F label="Image URL">
-                <div className="flex gap-2">
-                  <input value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} className={inp} />
-                  <label className="rounded-lg border border-border px-3 py-2 hover:bg-secondary cursor-pointer"><Upload className="w-4 h-4" /><input type="file" accept="image/*" className="hidden" onChange={uploadImage} /></label>
-                </div>
-              </F>
             </div>
+            <ImageUpload
+              label="Course cover"
+              folder="products"
+              value={form.image}
+              onChange={(url) => setForm((s) => ({ ...s, image: url }))}
+              testid="course-image"
+            />
             <F label="Description"><textarea rows={4} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className={`${inp} resize-none`} /></F>
             <div className="flex gap-6">
               <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} className="accent-primary" /> Featured</label>

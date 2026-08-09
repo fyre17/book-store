@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { api, mediaUrl, BACKEND_URL } from "@/lib/api";
+import { api } from "@/lib/api";
 import { toast } from "sonner";
-import { Save, Upload, KeyRound, Eye, EyeOff } from "lucide-react";
+import { Save, KeyRound, Eye, EyeOff } from "lucide-react";
+import ImageUpload from "@/components/ImageUpload";
 
 const F = ({ label, hint, children }) => (
   <label className="block">
@@ -18,12 +19,6 @@ export default function AdminSettings() {
   if (!s) return <p>Loading...</p>;
 
   const set = (k, v) => setS({ ...s, [k]: v });
-  const uploadQR = async (key, e) => {
-    const f = e.target.files?.[0]; if (!f) return;
-    const fd = new FormData(); fd.append("file", f);
-    const res = await api.post("/upload", fd);
-    set(key, `${BACKEND_URL}${res.data.url}`);
-  };
 
   const save = async () => {
     try { await api.put("/admin/settings", s); toast.success("Settings saved"); }

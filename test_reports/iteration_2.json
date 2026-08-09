@@ -1,0 +1,48 @@
+{
+  "summary": "Focused testing of the new Emergent Object Storage image upload system + product detail pages. Backend upload endpoint, storage retrieval, admin-book image persistence, and order screenshot storage all pass (8/8 pytest). Frontend admin book upload + preview + save + reload persistence works and image serves as image/webp via /api/files/. Storefront /books renders new uploaded image with proper aspect ratio, click-through to /books/:id detail with Buy now -> /checkout works. /courses/:id detail works. However, /admin/settings PAGE CRASHES (uncaught ReferenceError: 'Upload is not defined') — the new ImageUpload component is imported but the code still contains the old qrBox() using undefined identifiers (Upload icon, mediaUrl, uploadQR). QR upload flow via ImageUpload is therefore completely unreachable in the UI.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "AdminSettings (/admin/settings)",
+        "issue": "Uncaught ReferenceError: 'Upload is not defined' during render. AdminSettings.jsx imports ImageUpload but still calls a leftover qrBox() helper that references `Upload` (lucide icon, not imported), `mediaUrl` (not imported), and `uploadQR` (undefined function). Page shows CRA red error overlay and never renders. QR upload/testids `qr-phonepe_qr-*`, `qr-gpay_qr-*`, `qr-paytm_qr-*` do not exist in DOM.",
+        "selector": "[data-testid='qr-phonepe_qr-file'] (missing)",
+        "priority": "CRITICAL"
+      }
+    ],
+    "integration_issues": [
+      {
+        "flow": "Admin -> Settings -> upload QR -> Save -> reload persistence",
+        "issue": "Cannot be executed because /admin/settings crashes on mount. Requirement 'Preview appears with Replace/Delete controls. Save settings; reload -> QR still shown' is blocked.",
+        "affected_selectors": ["[data-testid='qr-phonepe_qr-file']", "[data-testid='qr-phonepe_qr-replace']", "[data-testid='qr-phonepe_qr-delete']", "[data-testid='save-settings']"]
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_upload_storage.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Fix AdminSettings.jsx: remove the legacy qrBox() helper (and the undefined Upload / mediaUrl / uploadQR references) and replace the three QR slots with the new ImageUpload component, e.g. <ImageUpload testid='qr-phonepe_qr' folder='qr' value={s.phonepe_qr} onChange={(v)=>set('phonepe_qr',v)} label='PhonePe QR' /> (and same for gpay_qr, paytm_qr). Ensure the parent Save button (data-testid='save-settings') persists the settings and after reload the ImageUpload preview + Replace/Delete controls still show."
+  ],
+  "critical_code_review_comments": [
+    "AdminSettings.jsx has dead/duplicated upload UI (qrBox) that shadows the intended ImageUpload usage and breaks the entire page — should be removed as part of the migration.",
+    "AdminSettings imports ImageUpload but never renders it; a linter/eslint no-undef rule would have caught the missing `Upload` symbol at build time.",
+    "server.py is 762 lines — approaching the 700-line guideline; consider splitting storage/upload helpers and admin routers into modules for maintainability.",
+    "Book model exposes a single `image` field; the request spec used `cover_image`/`image_url` — confirm intended contract with frontend (currently only `image` is stored and returned)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_upload_storage.py (new)"
+  ],
+  "success_rate": {"backend": "100%", "frontend": "80%"},
+  "test_credentials": "admin@bookstore.com / Admin@123 (from /app/memory/test_credentials_unzipped.md)",
+  "seed_data_creation": "Ephemeral: created & deleted TEST_UI_UploadBook via API and one TEST order via /api/orders. All cleaned up.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend upload/storage flow is solid (see test_upload_storage.py). Frontend admin books upload -> save -> reload persistence works and images serve as image/webp under /api/files/. Storefront card image + /books/:id detail + /courses/:id detail + Buy now -> /checkout all verified. Only /admin/settings is broken due to leftover qrBox() using undefined `Upload`, `mediaUrl`, `uploadQR`. Once main agent replaces qrBox with the ImageUpload component per spec, rerun the QR upload+persist test.",
+  "rca_of_the_issue": "AdminSettings.jsx was partially migrated to the new ImageUpload component (import added) but the old qrBox() helper — which referenced the pre-migration icon (`Upload`), old media URL helper (`mediaUrl`), and old handler (`uploadQR`) — was not deleted and is still rendered for the three QR slots. Since none of those symbols are imported/defined, React throws ReferenceError on first render, causing the CRA error overlay and preventing any interaction (including the Save button). Fix: delete qrBox and render <ImageUpload testid='qr-phonepe_qr' .../> for each QR key."
+}
