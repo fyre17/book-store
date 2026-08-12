@@ -459,41 +459,73 @@ async def update_settings(body: SettingsModel, admin=Depends(require_admin)):
     return doc
 
 
-# ---------- File Upload (Emergent Object Storage) ----------
+# ---------- File Upload (Cloudinary) ----------
+
 def _upload_image_to_storage(file: UploadFile, folder: str = "products") -> str:
-    """Validate, compress, upload. Returns public API path e.g. /api/files/{path}."""
+    """Validate, compress, upload to Cloudinary. Returns permanent image URL."""
     content_type = (file.content_type or "").lower()
+
     if content_type not in ALLOWED_IMAGE_MIMES:
         raise HTTPException(400, "Only JPG, PNG, or WEBP images are allowed")
+
     data = file.file.read()
+
     if len(data) > MAX_UPLOAD_BYTES:
         raise HTTPException(413, "Image must be under 10 MB")
+
     compressed, mime, ext = compress_image(data, content_type)
-    path = f"{APP_NAME}/{folder}/{uuid.uuid4().hex}.{ext}"
-    storage_put(path, compressed, mime)
-    return path
+
+    try:
+        result = cloudinary.uploader.upload(
+            BytesIO(compressed),
+            folder=f"bookstore-pro/{folder}",
+            resource_type="image",
+            format="webp",
+        )
+
+        return result["secure_url"]
+
+    except Exception as e:
+        logger.exception("Cloudinary upload failed")
+        raise HTTPException(500, f"Image upload failed: {str(e)}")
 
 
 @api.post("/upload")
-async def upload_file(file: UploadFile = File(...), folder: str = Form("products"),
-                      admin=Depends(require_admin)):
-    """Admin-only image upload for products. Public assets are served via /api/files/{path}."""
+async def upload_file(
+    file: UploadFile = File(...),
+    folder: str = Form("products"),
+    admin=Depends(require_admin)
+):
+    """Admin-only image upload using Cloudinary."""
+
     if folder not in ("products", "qr"):
         folder = "products"
-    path = _upload_image_to_storage(file, folder=folder)
-    return {"path": path, "url": f"/api/files/{path}"}
+
+    url = _upload_image_to_storage(file, folder=folder)
+
+    return {
+        "path": url,
+        "url": url
+    }
 
 
 @api.get("/files/{path:path}")
 async def serve_file(path: str):
+    """Legacy endpoint for old Emergent Storage files."""
     try:
         content, mime = storage_get(path)
     except HTTPException:
         raise
     except Exception:
         raise HTTPException(404, "File not found")
-    return Response(content=content, media_type=mime,
-                    headers={"Cache-Control": "public, max-age=31536000, immutable"})
+
+    return Response(
+        content=content,
+        media_type=mime,
+        headers={
+            "Cache-Control": "public, max-age=31536000, immutable"
+        }
+    )
 
 
 # ---------- Orders ----------
