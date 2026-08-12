@@ -754,7 +754,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+@app.get("/healthz")
+async def healthz():
+    return {"status": "ok"}
 
 @app.on_event("shutdown")
 async def shutdown():
