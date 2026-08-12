@@ -12,7 +12,7 @@ from typing import List, Optional
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from io import BytesIO
-import os, uuid, logging, bcrypt, jwt, httpx, requests
+import os, uuid, logging, bcrypt, jwt, httpx, requests, cloudinary, cloudinary.uploader
 from PIL import Image
 
 ROOT_DIR = Path(__file__).parent
