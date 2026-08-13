@@ -69,19 +69,6 @@ def storage_put(path: str, data: bytes, content_type: str) -> dict:
     except Exception as e:
         logger.exception(f"Cloudinary upload failed: {e}")
         raise HTTPException(500, f"Cloudinary upload failed: {str(e)}")
-def storage_get(path: str):
-    key = init_storage()
-    if not key:
-        raise HTTPException(404, "Storage not initialized")
-    r = requests.get(f"{STORAGE_URL}/objects/{path}",
-                     headers={"X-Storage-Key": key}, timeout=60)
-    if r.status_code == 404:
-        key = init_storage(force=True)
-        r = requests.get(f"{STORAGE_URL}/objects/{path}",
-                         headers={"X-Storage-Key": key}, timeout=60)
-    r.raise_for_status()
-    return r.content, r.headers.get("Content-Type", "application/octet-stream")
-
 
 ALLOWED_IMAGE_MIMES = {"image/jpeg", "image/jpg", "image/png", "image/webp"}
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 MB
