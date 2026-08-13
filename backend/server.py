@@ -479,27 +479,6 @@ async def upload_file(
         "path": url,
         "url": url
     }
-
-
-@api.get("/files/{path:path}")
-async def serve_file(path: str):
-    """Legacy endpoint for old Emergent Storage files."""
-    try:
-        content, mime = storage_get(path)
-    except HTTPException:
-        raise
-    except Exception:
-        raise HTTPException(404, "File not found")
-
-    return Response(
-        content=content,
-        media_type=mime,
-        headers={
-            "Cache-Control": "public, max-age=31536000, immutable"
-        }
-    )
-
-
 # ---------- Orders ----------
 async def send_telegram_order(order: dict, screenshot_url: Optional[str], base_url: str):
     s = await db.settings.find_one({"_id": "singleton"}) or {}
@@ -561,9 +540,9 @@ async def create_order(request: Request,
         raise HTTPException(404, "Item not found")
 
     unit = item.get("offer_price") or item["price"]
-    total = float(unit) * int(quantity)
+   total = float(unit) * int(quantity)
 
-       screenshot_url = None
+    screenshot_url = None
     if screenshot is not None:
         content_type = (screenshot.content_type or "").lower()
 
