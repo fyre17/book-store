@@ -538,10 +538,10 @@ async def create_order(request: Request,
     if not item:
         raise HTTPException(404, "Item not found")
 
-    unit = item.get("offer_price") or item["price"]     
-     total = float(unit) * int(quantity)
+       unit = item.get("offer_price") or item["price"]
+       total = float(unit) * int(quantity)
 
-     screenshot_url = None
+       screenshot_url = None
     if screenshot is not None:
         content_type = (screenshot.content_type or "").lower()
 
