@@ -563,14 +563,15 @@ async def create_order(request: Request,
     unit = item.get("offer_price") or item["price"]
     total = float(unit) * int(quantity)
 
-    screenshot_url = None
+       screenshot_url = None
     if screenshot is not None:
         content_type = (screenshot.content_type or "").lower()
-               if content_type in ALLOWED_IMAGE_MIMES:
+
+        if content_type in ALLOWED_IMAGE_MIMES:
             data = screenshot.file.read()
+
             if len(data) <= MAX_UPLOAD_BYTES:
                 compressed, mime, ext = compress_image(data, content_type)
-                spath = f"{APP_NAME}/orders/{uuid.uuid4().hex}.{ext}"
 
                 try:
                     result = cloudinary.uploader.upload(
@@ -583,29 +584,51 @@ async def create_order(request: Request,
                 except Exception as e:
                     logger.error(f"Screenshot upload failed: {e}")
 
-                ua = request.headers.get("user-agent", "")
-                ip = request.client.host if request.client else "-"
+    ua = request.headers.get("user-agent", "")
+    ip = request.client.host if request.client else "-"
 
-                order = {
-                    "id": str(uuid.uuid4()),
-                    "item_type": item_type, "item_id": item_id,
-                    "item_title": item.get("title"), "item_image": item.get("image", ""),
-                    "quantity": quantity, "unit_price": unit, "total": total,
-                    "full_name": full_name, "whatsapp": whatsapp, "alt_mobile": alt_mobile,
-        "email": email, "address": address, "city": city, "state": state,
-        "country": country, "pincode": pincode, "notes": notes,
-        "transaction_id": transaction_id, "screenshot_url": screenshot_url,
-        "status": "pending", "payment_status": "submitted",
-        "ip": ip, "device": ua,
+    order = {
+        "id": str(uuid.uuid4()),
+        "item_type": item_type,
+        "item_id": item_id,
+        "item_title": item.get("title"),
+        "item_image": item.get("image", ""),
+        "quantity": quantity,
+        "unit_price": unit,
+        "total": total,
+        "full_name": full_name,
+        "whatsapp": whatsapp,
+        "alt_mobile": alt_mobile,
+        "email": email,
+        "address": address,
+        "city": city,
+        "state": state,
+        "country": country,
+        "pincode": pincode,
+        "notes": notes,
+        "transaction_id": transaction_id,
+        "screenshot_url": screenshot_url,
+        "status": "pending",
+        "payment_status": "submitted",
+        "ip": ip,
+        "device": ua,
         "created_at": now_iso(),
     }
+
     await db.orders.insert_one(order)
 
     base_url = str(request.base_url).rstrip("/")
     sent, info = await send_telegram_order(order, screenshot_url, base_url)
+
     order["_id"] = None
     order.pop("_id", None)
-    return {"ok": True, "order_id": order["id"], "telegram": sent, "telegram_info": info}
+
+    return {
+        "ok": True,
+        "order_id": order["id"],
+        "telegram": sent,
+        "telegram_info": info,
+    }
 
 
 @api.get("/admin/orders")
