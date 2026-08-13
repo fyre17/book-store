@@ -566,31 +566,32 @@ async def create_order(request: Request,
     screenshot_url = None
     if screenshot is not None:
         content_type = (screenshot.content_type or "").lower()
-        if content_type in ALLOWED_IMAGE_MIMES:
+               if content_type in ALLOWED_IMAGE_MIMES:
             data = screenshot.file.read()
             if len(data) <= MAX_UPLOAD_BYTES:
                 compressed, mime, ext = compress_image(data, content_type)
                 spath = f"{APP_NAME}/orders/{uuid.uuid4().hex}.{ext}"
-try:
-    result = cloudinary.uploader.upload(
-        BytesIO(compressed),
-        folder="bookstore-pro/orders",
-        resource_type="image",
-        format="webp",
-    )
-    screenshot_url = result["secure_url"]
-except Exception as e:
-    logger.error(f"Screenshot upload failed: {e}")
 
-    ua = request.headers.get("user-agent", "")
-    ip = request.client.host if request.client else "-"
+                try:
+                    result = cloudinary.uploader.upload(
+                        BytesIO(compressed),
+                        folder="bookstore-pro/orders",
+                        resource_type="image",
+                        format="webp",
+                    )
+                    screenshot_url = result["secure_url"]
+                except Exception as e:
+                    logger.error(f"Screenshot upload failed: {e}")
 
-    order = {
-        "id": str(uuid.uuid4()),
-        "item_type": item_type, "item_id": item_id,
-        "item_title": item.get("title"), "item_image": item.get("image", ""),
-        "quantity": quantity, "unit_price": unit, "total": total,
-        "full_name": full_name, "whatsapp": whatsapp, "alt_mobile": alt_mobile,
+                ua = request.headers.get("user-agent", "")
+                ip = request.client.host if request.client else "-"
+
+                order = {
+                    "id": str(uuid.uuid4()),
+                    "item_type": item_type, "item_id": item_id,
+                    "item_title": item.get("title"), "item_image": item.get("image", ""),
+                    "quantity": quantity, "unit_price": unit, "total": total,
+                    "full_name": full_name, "whatsapp": whatsapp, "alt_mobile": alt_mobile,
         "email": email, "address": address, "city": city, "state": state,
         "country": country, "pincode": pincode, "notes": notes,
         "transaction_id": transaction_id, "screenshot_url": screenshot_url,
