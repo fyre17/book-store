@@ -52,20 +52,23 @@ def init_storage(force: bool = False) -> Optional[str]:
         return None
 
 def storage_put(path: str, data: bytes, content_type: str) -> dict:
-    key = init_storage()
-    if not key:
-        raise HTTPException(500, "Storage not initialized")
-    r = requests.put(f"{STORAGE_URL}/objects/{path}",
-                     headers={"X-Storage-Key": key, "Content-Type": content_type},
-                     data=data, timeout=120)
-    if r.status_code == 404:  # dead key — reinit
-        key = init_storage(force=True)
-        r = requests.put(f"{STORAGE_URL}/objects/{path}",
-                         headers={"X-Storage-Key": key, "Content-Type": content_type},
-                         data=data, timeout=120)
-    r.raise_for_status()
-    return r.json()
+    """Upload image to Cloudinary."""
+    try:
+        filename = os.path.splitext(os.path.basename(path))[0]
 
+        result = cloudinary.uploader.upload(
+            BytesIO(data),
+            folder="bookstore-pro",
+            public_id=filename,
+            resource_type="image",
+            format="webp",
+        )
+
+        return result
+
+    except Exception as e:
+        logger.exception(f"Cloudinary upload failed: {e}")
+        raise HTTPException(500, f"Cloudinary upload failed: {str(e)}")
 def storage_get(path: str):
     key = init_storage()
     if not key:
@@ -606,8 +609,13 @@ async def create_order(request: Request,
                 compressed, mime, ext = compress_image(data, content_type)
                 spath = f"{APP_NAME}/orders/{uuid.uuid4().hex}.{ext}"
                 try:
-                    storage_put(spath, compressed, mime)
-                    screenshot_url = f"/api/files/{spath}"
+                    result = cloudinary.uploader.upload(
+    BytesIO(compressed),
+    folder="bookstore-pro/orders",
+    resource_type="image",
+    format="webp",
+)
+screenshot_url = result["secure_url"]
                 except Exception as e:
                     logger.error(f"Screenshot upload failed: {e}")
 
