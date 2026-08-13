@@ -27,30 +27,6 @@ cloudinary.config(
 JWT_SECRET = os.environ.get("JWT_SECRET", "bookstore-pro-secret-change-me")
 JWT_ALG = "HS256"
 JWT_EXP_HOURS = 24 * 7
-
-# ---------- Emergent Object Storage ----------
-APP_NAME = "bookstore-pro"
-STORAGE_BASE = (os.environ.get("INTEGRATION_PROXY_URL") or "").strip() or "https://integrations.emergentagent.com"
-STORAGE_URL = STORAGE_BASE.rstrip("/") + "/objstore/api/v1/storage"
-EMERGENT_KEY = os.environ.get("EMERGENT_LLM_KEY")
-_storage_key: Optional[str] = None
-
-def init_storage(force: bool = False) -> Optional[str]:
-    global _storage_key
-    if _storage_key and not force:
-        return _storage_key
-    if not EMERGENT_KEY:
-        logging.warning("EMERGENT_LLM_KEY not set; object storage disabled")
-        return None
-    try:
-        r = requests.post(f"{STORAGE_URL}/init", json={"emergent_key": EMERGENT_KEY}, timeout=30)
-        r.raise_for_status()
-        _storage_key = r.json()["storage_key"]
-        return _storage_key
-    except Exception as e:
-        logging.error(f"Storage init failed: {e}")
-        return None
-
 def storage_put(path: str, data: bytes, content_type: str) -> dict:
     """Upload image to Cloudinary."""
     try:
