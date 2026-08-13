@@ -571,16 +571,16 @@ async def create_order(request: Request,
             if len(data) <= MAX_UPLOAD_BYTES:
                 compressed, mime, ext = compress_image(data, content_type)
                 spath = f"{APP_NAME}/orders/{uuid.uuid4().hex}.{ext}"
-                try:
-                    result = cloudinary.uploader.upload(
-    BytesIO(compressed),
-    folder="bookstore-pro/orders",
-    resource_type="image",
-    format="webp",
-)
-screenshot_url = result["secure_url"]
-                except Exception as e:
-                    logger.error(f"Screenshot upload failed: {e}")
+try:
+    result = cloudinary.uploader.upload(
+        BytesIO(compressed),
+        folder="bookstore-pro/orders",
+        resource_type="image",
+        format="webp",
+    )
+    screenshot_url = result["secure_url"]
+except Exception as e:
+    logger.error(f"Screenshot upload failed: {e}")
 
     ua = request.headers.get("user-agent", "")
     ip = request.client.host if request.client else "-"
